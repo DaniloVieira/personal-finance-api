@@ -6,9 +6,13 @@ import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagResponse;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.TransactionRequest;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.TransactionResponse;
 import br.com.personalfinace.personalfinanceapi.common.dto.Response;
+import br.com.personalfinace.personalfinanceapi.common.exception.BusinessException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -88,5 +92,43 @@ public class TransactionService {
     public Response delete(Long id) {
         transactionRepository.deleteById(id);
         return new Response("Deleted transaction with id " + id);
+    }
+
+    public List<TransactionResponse> splitTransaction(Long id, @Valid List<TransactionRequest> request) throws BusinessException {
+        Transaction parentTransaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Transaction not found"));
+
+        // Sum of existing children
+        BigDecimal existingChildrenTotal = transactionRepository
+                .findByParentTransactionId(id).stream()
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<Transaction> newChildren = request.stream()
+                .map(this::toEntity)
+                .toList();
+
+        BigDecimal newChildrenTotal = newChildren.stream()
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalAfterSplit = existingChildrenTotal.add(newChildrenTotal);
+
+        if (totalAfterSplit.abs().compareTo(parentTransaction.getAmount().abs()) > 0) {
+            throw new BusinessException("Split amounts cannot exceed the parent transaction amount");
+        }
+
+        newChildren.forEach(child -> {
+            child.setParentTransaction(parentTransaction);
+            child.setAccount(parentTransaction.getAccount());
+            child.setType(parentTransaction.getType());
+            child.setDate(parentTransaction.getDate());
+        });
+
+        List<Transaction> savedChildren = transactionRepository.saveAll(newChildren);
+
+        return savedChildren.stream()
+                .map(this::toResponse)
+                .toList();
     }
 }
