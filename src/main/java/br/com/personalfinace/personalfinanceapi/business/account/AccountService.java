@@ -2,13 +2,11 @@ package br.com.personalfinace.personalfinanceapi.business.account;
 
 import br.com.personalfinace.personalfinanceapi.business.account.dto.AccountRequest;
 import br.com.personalfinace.personalfinanceapi.business.account.dto.AccountResponse;
-import br.com.personalfinace.personalfinanceapi.common.dto.Response;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,11 +54,7 @@ public class AccountService {
         return accounts.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    public Response delete(Long id) {
-        Account account = getAccount(id);
-        if (Objects.isNull(account)) {
-            return null;
-        }
-        return new Response("Account deleted");
+    public void delete(Long id) {
+        accountRepository.deleteById(id);
     }
 }
