@@ -48,7 +48,6 @@ public class TagService {
     }
 
     public TagResponse findById(Long id) {
-//        return toResponse(Objects.requireNonNull(tagRepository.findById(id).orElse(null)));
         Tag tag =  tagRepository.findById(id).orElse(null);
         if (Objects.isNull(tag)) {
             Exception e = new Exception(String.format( "Tag not found, id: %d", id));
@@ -75,9 +74,10 @@ public class TagService {
     public Response delete(Long id) {
         Tag tag = tagRepository.findById(id).orElse(null);
         if (Objects.isNull(tag)) {
-            return null;
+            return new Response(String.format("Tag id %d not found", id) );
         }
-        return new Response("Tag deleted");
+        tagRepository.delete(tag);
+        return new Response(String.format("Tag %s deleted", tag.getName()));
     }
 
 }
