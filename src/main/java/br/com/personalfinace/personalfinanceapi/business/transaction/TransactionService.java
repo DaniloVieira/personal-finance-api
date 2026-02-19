@@ -3,8 +3,10 @@ package br.com.personalfinace.personalfinanceapi.business.transaction;
 import br.com.personalfinace.personalfinanceapi.business.account.AccountService;
 import br.com.personalfinace.personalfinanceapi.business.tag.TagService;
 import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagResponse;
+import br.com.personalfinace.personalfinanceapi.business.transaction.dto.DashboardSummary;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.TransactionRequest;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.TransactionResponse;
+import br.com.personalfinace.personalfinanceapi.business.transaction.enums.TransactionType;
 import br.com.personalfinace.personalfinanceapi.common.dto.Response;
 import br.com.personalfinace.personalfinanceapi.common.exception.BusinessException;
 import jakarta.validation.Valid;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -130,5 +134,34 @@ public class TransactionService {
         return savedChildren.stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+
+
+    public DashboardSummary getDashboardSummary() {
+        BigDecimal totalIncome = transactionRepository.sumAmount(TransactionType.INCOME);
+        BigDecimal totalExpenses = transactionRepository.sumAmount(TransactionType.EXPENSE);
+
+        // Balance = all account initial funds + income + expenses (expenses are negative)
+        BigDecimal accountFunds = accountService.getTotalInitialFunds();
+        BigDecimal totalBalance = accountFunds.add(totalIncome).add(totalExpenses);
+
+        // Percentage change: compare this month vs last month
+        LocalDate now = LocalDate.now();
+        LocalDate startOfMonth = now.withDayOfMonth(1);
+        LocalDate startOfLastMonth = startOfMonth.minusMonths(1);
+
+        BigDecimal thisMonthExpenses = transactionRepository.sumAmountByPeriod(TransactionType.INCOME, startOfMonth, now).abs();
+        BigDecimal lastMonthExpenses = transactionRepository.sumAmountByPeriod(TransactionType.EXPENSE, startOfLastMonth, startOfMonth.minusDays(1)).abs();
+
+        BigDecimal percentageChange = BigDecimal.ZERO;
+        if (lastMonthExpenses.compareTo(BigDecimal.ZERO) > 0) {
+            percentageChange = thisMonthExpenses
+                    .subtract(lastMonthExpenses)
+                    .divide(lastMonthExpenses, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        return new DashboardSummary(totalBalance, totalIncome, totalExpenses, percentageChange);
     }
 }

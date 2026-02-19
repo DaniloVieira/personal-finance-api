@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -68,5 +69,12 @@ public class AccountService {
 
     public void delete(Long id) {
         accountRepository.deleteById(id);
+    }
+
+    // TODO check if dedicated query has better performance
+    public BigDecimal getTotalInitialFunds() {
+        return accountRepository.findAll().stream()
+                .map(Account::getInitialFunds)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
