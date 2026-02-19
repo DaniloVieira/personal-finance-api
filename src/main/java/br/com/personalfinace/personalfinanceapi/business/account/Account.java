@@ -1,5 +1,6 @@
 package br.com.personalfinace.personalfinanceapi.business.account;
 
+import br.com.personalfinace.personalfinanceapi.business.user.User;
 import br.com.personalfinace.personalfinanceapi.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,5 +24,9 @@ public class Account  extends BaseEntity {
 
     @Column(name = "vl_initial_funds", nullable = false)
     private BigDecimal initialFunds = BigDecimal.ZERO;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_user", nullable = false)
+    private User user;
 
 }

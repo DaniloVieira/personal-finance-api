@@ -1,5 +1,6 @@
 package br.com.personalfinace.personalfinanceapi.business.tag;
 
+import br.com.personalfinace.personalfinanceapi.business.user.User;
 import br.com.personalfinace.personalfinanceapi.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,5 +35,9 @@ public class Tag  extends BaseEntity {
 
     @OneToMany(mappedBy = "parent")
     private List<Tag> children = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_user", nullable = false)
+    private User user;
 
 }

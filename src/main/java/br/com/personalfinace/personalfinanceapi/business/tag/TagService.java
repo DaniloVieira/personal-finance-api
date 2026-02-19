@@ -2,7 +2,10 @@ package br.com.personalfinace.personalfinanceapi.business.tag;
 
 import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagRequest;
 import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagResponse;
+import br.com.personalfinace.personalfinanceapi.business.user.AuthenticatedUserProvider;
+import br.com.personalfinace.personalfinanceapi.business.user.User;
 import br.com.personalfinace.personalfinanceapi.common.dto.Response;
+import br.com.personalfinace.personalfinanceapi.common.exception.BusinessException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,7 @@ import java.util.stream.Collectors;
 public class TagService {
 
     private final TagRepository tagRepository;
+    private final AuthenticatedUserProvider authUser;
 
     private TagResponse toResponse(Tag tag) {
 
@@ -41,8 +45,11 @@ public class TagService {
         return tag;
     }
 
-    public TagResponse save(TagRequest tagRequest) {
+    public TagResponse save(TagRequest tagRequest) throws BusinessException {
         Tag tag = toEntity(tagRequest);
+        if(Objects.isNull(tag.getId())) {
+            tag.setUser(authUser.getCurrentUser());
+        }
         tagRepository.save(tag);
         return toResponse(tag);
     }
@@ -57,8 +64,9 @@ public class TagService {
         return toResponse(tag);
     }
 
-    public List<TagResponse> findAll() {
-        List<Tag> tags = tagRepository.findAll();
+    public List<TagResponse> findAll() throws BusinessException {
+        User user = authUser.getCurrentUser();
+        List<Tag> tags = tagRepository.findByUserId(user.getId());
         return tags.stream().map(this::toResponse).collect(Collectors.toList());
     }
 

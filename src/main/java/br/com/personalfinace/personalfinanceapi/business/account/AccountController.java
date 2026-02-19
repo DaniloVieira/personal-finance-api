@@ -3,6 +3,7 @@ package br.com.personalfinace.personalfinanceapi.business.account;
 import br.com.personalfinace.personalfinanceapi.business.account.dto.AccountRequest;
 import br.com.personalfinace.personalfinanceapi.business.account.dto.AccountResponse;
 import br.com.personalfinace.personalfinanceapi.common.dto.ApiResponse;
+import br.com.personalfinace.personalfinanceapi.common.exception.BusinessException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<AccountResponse>> save(@RequestBody AccountRequest accountRequest) {
+    public ResponseEntity<ApiResponse<AccountResponse>> save(@RequestBody AccountRequest accountRequest) throws BusinessException {
         return ResponseEntity.ok(ApiResponse.success(accountService.save(accountRequest), "Account saved"));
     }
 
@@ -28,7 +29,7 @@ public class AccountController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AccountResponse>>> findAll() {
+    public ResponseEntity<ApiResponse<List<AccountResponse>>> findAll() throws BusinessException {
         return ResponseEntity.ok(ApiResponse.success(accountService.findAll(), "Accounts found"));
     }
 
