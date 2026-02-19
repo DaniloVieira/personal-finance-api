@@ -49,7 +49,7 @@ public class Transaction  extends BaseEntity {
     @JoinColumn(name = "fk_transfer_group")
     private TransferGroup transferGroup;    // links both sides
 
-    @ManyToMany(cascade = CascadeType.DETACH)
+    @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(
             name = "PFI_TRANSACTION_TAG",
             joinColumns = @JoinColumn(name = "fk_transaction"),

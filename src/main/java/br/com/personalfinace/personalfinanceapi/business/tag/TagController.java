@@ -4,6 +4,7 @@ import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagRequest;
 import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagResponse;
 import br.com.personalfinace.personalfinanceapi.common.dto.ApiResponse;
 import br.com.personalfinace.personalfinanceapi.common.dto.Response;
+import br.com.personalfinace.personalfinanceapi.common.exception.BusinessException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class TagController {
     private final TagService tagService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<TagResponse>> save(@RequestBody TagRequest tagRequest) {
+    public ResponseEntity<ApiResponse<TagResponse>> save(@RequestBody TagRequest tagRequest) throws BusinessException {
         return ResponseEntity.ok(ApiResponse.success(tagService.save(tagRequest),"Tag saved"));
     }
 
@@ -29,7 +30,7 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<TagResponse>>> findAll () {
+    public ResponseEntity<ApiResponse<List<TagResponse>>> findAll () throws BusinessException {
         return ResponseEntity.ok(ApiResponse.success(tagService.findAll(), "Tags found"));
     }
 

@@ -30,3 +30,4 @@ replay_pid*
 /.idea/encodings.xml
 /.idea/jarRepositories.xml
 /target
+/.idea/diff-generator.xml
