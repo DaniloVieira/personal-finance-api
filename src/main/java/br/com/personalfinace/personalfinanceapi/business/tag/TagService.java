@@ -24,10 +24,10 @@ public class TagService {
         return new TagResponse(
                 tag.getId(),
                 tag.getName(),
+                tag.getIcon(),
                 Optional.ofNullable(tag.getParent()).map(Tag::getId).orElse(null),
                 tag.getPrimaryHexColor(),
-                tag.getSecondaryHexColor(),
-                null
+                tag.getSecondaryHexColor()
         );
     }
 
@@ -45,28 +45,33 @@ public class TagService {
         return tag;
     }
 
-    public TagResponse save(TagRequest tagRequest) throws BusinessException {
-        Tag tag = toEntity(tagRequest);
-        if(Objects.isNull(tag.getId())) {
+    public TagResponse save(TagRequest request) throws BusinessException {
+        Tag tag;
+
+        if (request.id() != null) {
+            tag = tagRepository.findById(request.id())
+                    .orElseThrow(() -> new BusinessException("Tag not found"));
+        } else {
+            tag = new Tag();
             tag.setUser(authUser.getCurrentUser());
         }
-        tagRepository.save(tag);
-        return toResponse(tag);
+
+        tag.setName(request.name());
+        tag.setIcon(request.icon());
+        tag.setPrimaryHexColor(request.primaryHexColor());
+        tag.setSecondaryHexColor(request.secondaryHexColor());
+
+        return toResponse(tagRepository.save(tag));
     }
 
-    public TagResponse findById(Long id) {
-        Tag tag =  tagRepository.findById(id).orElse(null);
-        if (Objects.isNull(tag)) {
-            Exception e = new Exception(String.format( "Tag not found, id: %d", id));
-            e.printStackTrace(); // TODO change for logging
-            return null;
-        }
-        return toResponse(tag);
+    public TagResponse findById(Long id) throws BusinessException {
+        return toResponse(tagRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Tag not found")));
     }
 
     public List<TagResponse> findAll() throws BusinessException {
         User user = authUser.getCurrentUser();
-        List<Tag> tags = tagRepository.findByUserId(user.getId());
+        List<Tag> tags = tagRepository.findByUserIdAndParentIsNull(user.getId());
         return tags.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
@@ -86,6 +91,14 @@ public class TagService {
         }
         tagRepository.delete(tag);
         return new Response(String.format("Tag %s deleted", tag.getName()));
+    }
+
+    public Set<Tag> findAndValidateTags(List<Long> tagIds) throws BusinessException {
+        Set<Tag> tags = new HashSet<>(tagRepository.findAllById(tagIds));
+        if (tags.size() != tagIds.size()) {
+            throw new BusinessException("One or more tags not found");
+        }
+        return tags;
     }
 
 }

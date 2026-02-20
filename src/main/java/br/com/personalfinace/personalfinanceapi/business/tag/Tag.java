@@ -23,6 +23,9 @@ public class Tag  extends BaseEntity {
     @Column(name="ds_name")
     private String name;
 
+    @Column(name = "ds_icon")
+    private String icon;
+
     @Column(name="ds_primary_hex_color")
     private String primaryHexColor;
 

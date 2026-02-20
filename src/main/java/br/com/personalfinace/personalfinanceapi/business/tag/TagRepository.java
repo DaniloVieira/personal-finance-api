@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface TagRepository extends JpaRepository<Tag, Long>, TagRepositoryCustom {
 
-    public List<Tag> findByUserId(Long id);
+    List<Tag> findByUserIdAndParentIsNull(Long id);
+    List<Tag> findByParentId(Long parentId);
+    List<Tag> findByUserId(Long userId);
 
 }
