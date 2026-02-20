@@ -1,5 +1,6 @@
 package br.com.personalfinace.personalfinanceapi.business.transaction;
 
+import br.com.personalfinace.personalfinanceapi.business.transaction.dto.DashboardSummary;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.TransactionRequest;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.TransactionResponse;
 import br.com.personalfinace.personalfinanceapi.common.dto.ApiResponse;
@@ -43,6 +44,11 @@ public class TransactionController {
     @PostMapping("/split/parent/{id}")
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> splitTransaction(@PathVariable Long id, @Valid @RequestBody List<TransactionRequest> request) throws BusinessException {
         return ResponseEntity.ok(ApiResponse.success(transactionService.splitTransaction(id, request), "Transaction found"));
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<DashboardSummary>> getDashboardSummary () {
+        return ResponseEntity.ok(ApiResponse.success(transactionService.getDashboardSummary(), "Transactions summary retrieved"));
     }
 
 }
