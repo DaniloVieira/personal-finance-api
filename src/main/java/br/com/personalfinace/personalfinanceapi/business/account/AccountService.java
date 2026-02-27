@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,13 +49,17 @@ public class AccountService {
     }
 
     public @Nullable Account getAccount(Long id) {
+        if (id == null) return null;
         return accountRepository.findById(id).orElse(null);
     }
 
     public AccountResponse save(AccountRequest accountRequest) throws BusinessException {
-        Account account = toEntity(accountRequest);
-        if(Objects.isNull(account.getId())){
+        Account account = Optional.ofNullable(getAccount(accountRequest.id())).orElse(toEntity(accountRequest));
+        if(Objects.isNull(account.getId())) {
             account.setUser(authUser.getCurrentUser());
+        } else {
+            account.setName(accountRequest.name());
+            account.setInitialFunds(accountRequest.initialFunds());
         }
         return toResponse(accountRepository.save(account));
     }
