@@ -48,6 +48,11 @@ public class AccountService {
         return toResponse(account);
     }
 
+    public Account getAccountById (Long id ) {
+        if (Objects.isNull(id)) return null;
+        return accountRepository.findById(id).orElse(null);
+    }
+
     public @Nullable Account getAccount(Long id) {
         if (id == null) return null;
         return accountRepository.findById(id).orElse(null);
