@@ -32,7 +32,7 @@ public class TagController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Response>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Response>> delete(@PathVariable Long id) throws BusinessException {
         Response response = tagService.delete(id);
         return ResponseEntity.ok(ApiResponse.success(null,"Tag deleted successfully"));
     }

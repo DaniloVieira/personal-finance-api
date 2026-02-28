@@ -20,7 +20,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<TransactionResponse>> save(@Valid @RequestBody TransactionRequest request) {
+    public ResponseEntity<ApiResponse<TransactionResponse>> save(@Valid @RequestBody TransactionRequest request) throws BusinessException {
         TransactionResponse response = transactionService.save(request);
         return ResponseEntity.ok(ApiResponse.created(response, "Transaction created successfully"));
     }

@@ -1,6 +1,7 @@
 package br.com.personalfinace.personalfinanceapi.business.transaction;
 
 import br.com.personalfinace.personalfinanceapi.business.account.AccountService;
+import br.com.personalfinace.personalfinanceapi.business.tag.Tag;
 import br.com.personalfinace.personalfinanceapi.business.tag.TagService;
 import br.com.personalfinace.personalfinanceapi.business.tag.dto.TagResponse;
 import br.com.personalfinace.personalfinanceapi.business.transaction.dto.DashboardSummary;
@@ -74,9 +75,29 @@ public class TransactionService {
         return transaction;
     }
 
-    public TransactionResponse save(TransactionRequest transactionRequest) {
-        Transaction transaction = toEntity(transactionRequest);
-        return toResponse(transactionRepository.save(transaction)) ;
+    public TransactionResponse save(TransactionRequest request) throws BusinessException {
+        Transaction transaction;
+
+        if (request.id() != null) {
+            transaction = transactionRepository.findById(request.id())
+                    .orElseThrow(() -> new BusinessException("Transaction not found"));
+            transaction.getTags().clear(); // remove old tags
+            transaction.setDescription(request.description());
+            transaction.setAmount(request.amount());
+//            transaction.setType(request.type()); // TODO define based on value and if it has transfer group
+            transaction.setDate(request.date());
+            transaction.setAccount(accountService.getAccountById(request.accountId()));
+        } else {
+            transaction = toEntity(request);
+        }
+        // Fetch EXISTING tags from the database — this is the key part
+        List<Long> tagIds = request.getTagIds();
+        if (!tagIds.isEmpty()) {
+            Set<Tag> managedTags = tagService.findAndValidateTags(tagIds);
+            transaction.setTags(managedTags);
+        }
+
+        return toResponse(transactionRepository.save(transaction));
     }
 
     public List<Transaction> findAllByAccountId(Long accountId) {

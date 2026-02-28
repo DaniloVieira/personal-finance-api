@@ -6,6 +6,7 @@ import br.com.personalfinace.personalfinanceapi.business.user.AuthenticatedUserP
 import br.com.personalfinace.personalfinanceapi.business.user.User;
 import br.com.personalfinace.personalfinanceapi.common.dto.Response;
 import br.com.personalfinace.personalfinanceapi.common.exception.BusinessException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -84,11 +85,11 @@ public class TagService {
         return new HashSet<>(tagRepository.findAllById(ids));
     }
 
-    public Response delete(Long id) {
-        Tag tag = tagRepository.findById(id).orElse(null);
-        if (Objects.isNull(tag)) {
-            return new Response(String.format("Tag id %d not found", id) );
-        }
+    @Transactional
+    public Response delete(Long id) throws BusinessException {
+        Tag tag = tagRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Tag not found"));
+        tagRepository.removeTagFromAllTransactions(id);
         tagRepository.delete(tag);
         return new Response(String.format("Tag %s deleted", tag.getName()));
     }
