@@ -1,0 +1,1 @@
+alter table pfi_tag add column ds_icon varchar(50);

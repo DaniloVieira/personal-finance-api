@@ -35,10 +35,10 @@ public class TransactionService {
                 .map(tag -> new TagResponse(
                         tag.getId(),
                         tag.getName(),
+                        tag.getIcon(),
                         tag.getParent() != null ? tag.getParent().getId() : null,
                         tag.getPrimaryHexColor(),
-                        tag.getSecondaryHexColor(),
-                        null
+                        tag.getSecondaryHexColor()
                 ))
                 .collect(Collectors.toSet());
 
@@ -91,7 +91,6 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository.findAll();
         return transactions.stream().map(this::toResponse).collect(Collectors.toList());
     }
-
 
     public Response delete(Long id) {
         transactionRepository.deleteById(id);

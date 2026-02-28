@@ -4,6 +4,7 @@ public record TagRequest(
 
         Long id,
         String name,
+        String icon,
         Long parentId,
         String primaryHexColor,
         String secondaryHexColor
